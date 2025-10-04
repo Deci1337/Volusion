@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизация</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .logo {
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            color: #333;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .logo p {
+            color: #666;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e1e1;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: #6a11cb;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
+        }
+
+        .auth-options {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .auth-option {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .auth-option.active {
+            background: #6a11cb;
+            color: white;
+        }
+
+        .auth-option:not(.active) {
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .auth-option:not(.active):hover {
+            background: #e9e9e9;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #6a11cb;
+            color: white;
+            margin-top: 20px;
+        }
+
+        .btn-primary:hover {
+            background: #5a0db3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(106, 17, 203, 0.3);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 30px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: #333;
+            font-size: 24px;
+        }
+
+        .close {
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .user-type-selector {
+            display: flex;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-type {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            background: #f5f5f5;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .user-type.active {
+            background: #6a11cb;
+            color: white;
+        }
+
+        .health-categories {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .health-category {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border: 2px solid #e1e1e1;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .health-category:hover {
+            border-color: #6a11cb;
+        }
+
+        .health-category input {
+            margin-right: 8px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            .auth-card {
+                padding: 30px 20px;
+            }
+            
+            .modal-content {
+                padding: 20px;
+            }
+            
+            .health-categories {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="auth-card">
+            <div class="logo">
+                <h1>Добро пожаловать</h1>
+                <p>Войдите в свою учетную запись</p>
+            </div>
+            
+            <div class="input-group">
+                <label for="login">Логин</label>
+                <input type="text" id="login" placeholder="Введите ваш логин">
+            </div>
+            
+            <div class="input-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" placeholder="Введите ваш пароль">
+            </div>
+            
+            <button class="btn btn-primary" id="login-btn">Войти</button>
+            
+            <div class="auth-options">
+                <div class="auth-option active" id="login-option">Вход</div>
+                <div class="auth-option" id="register-option">Регистрация</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно регистрации -->
+    <div class="modal" id="registration-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Регистрация</h2>
+                <span class="close" id="close-modal">&times;</span>
+            </div>
+            
+            <div class="user-type-selector">
+                <div class="user-type active" id="ovz-type">ОВЗ</div>
+                <div class="user-type" id="volunteer-type">Волонтер</div>
+            </div>
+            
+            <form id="registration-form">
+                <div class="input-group">
+                    <label for="first-name">Имя</label>
+                    <input type="text" id="first-name" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="last-name">Фамилия</label>
+                    <input type="text" id="last-name" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="email">Почта</label>
+                    <input type="email" id="email" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="district">Район</label>
+                    <input type="text" id="district" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="reg-password">Пароль</label>
+                    <input type="password" id="reg-password" required>
+                </div>
+                
+                <!-- Блок категорий здоровья (только для ОВЗ) -->
+                <div class="input-group" id="health-category-group">
+                    <label>Категория здоровья</label>
+                    <div class="health-categories">
+                        <label class="health-category">
+                            <input type="checkbox" name="health-category" value="mobility">
+                            Ограничение мобильности
+                        </label>
+                        <label class="health-category">
+                            <input type="checkbox" name="health-category" value="vision">
+                            Нарушение зрения
+                        </label>
+                        <label class="health-category">
+                            <input type="checkbox" name="health-category" value="hearing">
+                            Нарушение слуха
+                        </label>
+                        <label class="health-category">
+                            <input type="checkbox" name="health-category" value="speech">
+                            Немые
+                        </label>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Далее</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginOption = document.getElementById('login-option');
+            const registerOption = document.getElementById('register-option');
+            const registrationModal = document.getElementById('registration-modal');
+            const closeModal = document.getElementById('close-modal');
+            const ovzType = document.getElementById('ovz-type');
+            const volunteerType = document.getElementById('volunteer-type');
+            const healthCategoryGroup = document.getElementById('health-category-group');
+            const registrationForm = document.getElementById('registration-form');
+            const loginBtn = document.getElementById('login-btn');
+
+            // Переключение между входом и регистрацией
+            registerOption.addEventListener('click', function() {
+                registrationModal.style.display = 'flex';
+            });
+
+            closeModal.addEventListener('click', function() {
+                registrationModal.style.display = 'none';
+            });
+
+            // Закрытие модального окна при клике вне его
+            window.addEventListener('click', function(event) {
+                if (event.target === registrationModal) {
+                    registrationModal.style.display = 'none';
+                }
+            });
+
+            // Переключение между типами пользователей
+            ovzType.addEventListener('click', function() {
+                ovzType.classList.add('active');
+                volunteerType.classList.remove('active');
+                healthCategoryGroup.classList.remove('hidden');
+            });
+
+            volunteerType.addEventListener('click', function() {
+                volunteerType.classList.add('active');
+                ovzType.classList.remove('active');
+                healthCategoryGroup.classList.add('hidden');
+            });
+
+            // Обработка формы регистрации
+            registrationForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Сохранение данных пользователя
+                const userType = ovzType.classList.contains('active') ? 'ovz' : 'volunteer';
+                const userData = {
+                    firstName: document.getElementById('first-name').value,
+                    lastName: document.getElementById('last-name').value,
+                    email: document.getElementById('email').value,
+                    district: document.getElementById('district').value,
+                    password: document.getElementById('reg-password').value,
+                    type: userType
+                };
+                
+                if (userType === 'ovz') {
+                    const healthCategories = [];
+                    document.querySelectorAll('input[name="health-category"]:checked').forEach(checkbox => {
+                        healthCategories.push(checkbox.value);
+                    });
+                    userData.healthCategories = healthCategories;
+                }
+                
+                // Сохраняем данные в localStorage
+                localStorage.setItem('userData', JSON.stringify(userData));
+                
+                // Закрываем модальное окно
+                registrationModal.style.display = 'none';
+                
+                // Показываем сообщение об успешной регистрации
+                alert('Регистрация прошла успешно! Теперь вы можете войти в систему.');
+            });
+
+            // Обработка входа
+            loginBtn.addEventListener('click', function() {
+                const login = document.getElementById('login').value;
+                const password = document.getElementById('password').value;
+                
+                // Проверяем, есть ли сохраненные данные пользователя
+                const savedUserData = localStorage.getItem('userData');
+                
+                if (savedUserData) {
+                    const userData = JSON.parse(savedUserData);
+                    
+                    // Простая проверка логина и пароля
+                    if ((login === userData.email || login === userData.firstName) && password === userData.password) {
+                        // Сохраняем информацию о текущем пользователе
+                        localStorage.setItem('currentUser', JSON.stringify(userData));
+                        
+                        // Перенаправляем в зависимости от типа пользователя
+                        if (userData.type === 'ovz') {
+                            window.location.href = 'OVZ.html';
+                        } else {
+                            window.location.href = 'volunteer.html';
+                        }
+                    } else {
+                        alert('Неверный логин или пароль!');
+                    }
+                } else {
+                    alert('Сначала зарегистрируйтесь!');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

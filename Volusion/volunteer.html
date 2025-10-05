@@ -203,6 +203,114 @@
             color: #28a745;
         }
 
+        /* Стиль филтров.. */
+        .filters-panel {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.95);
+            padding: 20px;
+            border-radius: 12px;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            min-width: 300px;
+            max-width: 400px;
+        }
+
+        .filters-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .filters-header h3 {
+            color: #333;
+            font-size: 18px;
+            margin: 0;
+        }
+
+        .filter-group {
+            margin-bottom: 15px;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .filter-btn {
+            flex: 1;
+            padding: 12px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover {
+            background: #0056b3;
+            transform: translateY(-1px);
+        }
+
+        .filter-btn.reset {
+            background: #6c757d;
+        }
+
+        .filter-btn.reset:hover {
+            background: #545b62;
+        }
+
+        .filters-toggle {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .filters-toggle:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+
         .marker-popup {
             position: absolute;
             background: white;
@@ -371,13 +479,22 @@
             display: none;
         }
 
+        .filter-results {
+            margin-top: 10px;
+            padding: 8px;
+            background: #e7f3ff;
+            border-radius: 6px;
+            font-size: 12px;
+            text-align: center;
+        }
+
         @keyframes pulse {
             0% { opacity: 1; }
             50% { opacity: 0.7; }
             100% { opacity: 1; }
         }
 
-        /* Адаптивность для мобильных устройств */
+        /* Для мобилок */
         @media (max-width: 768px) {
             .control-panel {
                 top: 120px;
@@ -414,6 +531,13 @@
                 right: 10px;
                 max-width: none;
             }
+
+            .filters-panel {
+                bottom: 10px;
+                left: 10px;
+                right: 10px;
+                max-width: none;
+            }
         }
     </style>
 </head>
@@ -428,17 +552,8 @@
         <button class="btn location-btn" onclick="getUserLocation()">
             🎯 Моё местоположение
         </button>
-        <button class="btn" onclick="startTracking()" style="border-color: #ffc107;">
-            🔄 Определить местоположение
-        </button>
-        <button class="btn" onclick="stopTracking()" style="border-color: #dc3545;">
-            ⏹️ Прекратить отслеживать
-        </button>
         <button class="btn" onclick="showMoscow()">
             🏢 Москва
-        </button>
-        <button class="btn" onclick="clearRoute()" style="border-color: #6c757d;">
-            🗑️ Очистить маршрут
         </button>
     </div>
 
@@ -452,6 +567,72 @@
             <strong>Сохранённый адрес:</strong> <span id="savedAddressText"></span>
         </div>
     </div>
+
+    <!-- ФИЛЬТРЫ -->
+    <div class="filters-panel" id="filtersPanel" style="display: none;">
+        <div class="filters-header">
+            <h3>🔍 Фильтры поиска</h3>
+            <button class="close-btn" onclick="toggleFilters()">×</button>
+        </div>
+        
+        <div class="filter-group">
+            <!-- Города можно будет добавлять -->
+            <label for="cityFilter">Город:</label>
+            <select id="cityFilter">
+                <option value="all">Все города</option>
+                <option value="Москва">Москва</option>
+                <option value="Санкт-Петербург">Санкт-Петербург</option>
+                <option value="Новосибирск">Новосибирск</option>
+                <option value="Екатеринбург">Екатеринбург</option>
+                <option value="Казань">Казань</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="radiusFilter">Радиус поиска от адреса:</label>
+            <select id="radiusFilter">
+                <option value="0">Любой радиус</option>
+                <option value="1">1 км</option>
+                <option value="3">3 км</option>
+                <option value="5">5 км</option>
+                <option value="10">10 км</option>
+                <option value="15">15 км</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="disabilityFilter">Тип инвалидности:</label>
+            <select id="disabilityFilter">
+                <option value="all">Все типы</option>
+                <option value="Опорно-двигательный аппарат">Опорно-двигательный аппарат</option>
+                <option value="Нарушение зрения">Нарушение зрения</option>
+                <option value="Нарушение слуха">Нарушение слуха</option>
+                <option value="Общее заболевание">Общее заболевание</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="urgencyFilter">Срочность:</label>
+            <select id="urgencyFilter">
+                <option value="all">Все заявки</option>
+                <option value="urgent">Только срочные</option>
+                <option value="normal">Только обычные</option>
+            </select>
+        </div>
+
+        <div class="filter-results" id="filterResults">
+            Показано: 10 из 10 заявок
+        </div>
+
+        <div class="filter-actions">
+            <button class="filter-btn reset" onclick="resetFilters()">🔄 Сбросить</button>
+            <button class="filter-btn" onclick="applyFilters()">✅ Применить фильтры</button>
+        </div>
+    </div>
+
+    <button class="filters-toggle" id="filtersToggle" onclick="toggleFilters()">
+        🔍
+    </button>
 
     <button class="task-list-btn" onclick="toggleTaskList()">
         ☰ Задачи
@@ -503,8 +684,12 @@
         let currentMarkerData = null;
         let savedAddress = localStorage.getItem('savedAddress') || '';
         let savedAddressCoords = null;
+        let allHelpRequests = [];
+        let filteredHelpRequests = [];
 
-        const helpRequests = [
+        // Города и задачки для теста
+        allHelpRequests = [
+            // Москва
             {
                 id: 1,
                 coordinates: [37.6175, 55.7558],
@@ -513,7 +698,8 @@
                 disability: "Опорно-двигательный аппарат",
                 description: "Нужна помощь с покупкой продуктов и лекарств в ближайшей аптеке и магазине",
                 datetime: "07.10.2025, 14:00",
-                urgent: false
+                urgent: false,
+                city: "Москва"
             },
             {
                 id: 2,
@@ -523,7 +709,8 @@
                 disability: "Нарушение зрения",
                 description: "Требуется сопровождение в поликлинику №5 для планового осмотра",
                 datetime: "08.10.2025, 10:30",
-                urgent: true
+                urgent: true,
+                city: "Москва"
             },
             {
                 id: 3,
@@ -533,7 +720,8 @@
                 disability: "Опорно-двигательный аппарат",
                 description: "Помощь в уборке квартиры (влажная уборка, вынос мусора)",
                 datetime: "09.10.2025, 12:00",
-                urgent: false
+                urgent: false,
+                city: "Москва"
             },
             {
                 id: 4,
@@ -543,7 +731,8 @@
                 disability: "Нарушение слуха",
                 description: "Помощь с оформлением документов в социальной службе",
                 datetime: "10.10.2025, 11:00",
-                urgent: false
+                urgent: false,
+                city: "Москва"
             },
             {
                 id: 5,
@@ -553,59 +742,105 @@
                 disability: "Общее заболевание",
                 description: "Нужна помощь по дому: приготовление еды, уборка",
                 datetime: "11.10.2025, 15:00",
-                urgent: false
+                urgent: false,
+                city: "Москва"
             },
+            // Санкт-Петербург
             {
                 id: 6,
-                coordinates: [37.6150, 55.7450],
+                coordinates: [30.3155, 59.9375],
                 name: "Фёдоров Сергей Иванович",
                 age: 65,
                 disability: "Нарушение зрения",
                 description: "Сопровождение в банк для оплаты коммунальных услуг",
                 datetime: "12.10.2025, 13:30",
-                urgent: true
+                urgent: true,
+                city: "Санкт-Петербург"
             },
             {
                 id: 7,
-                coordinates: [37.6050, 55.7650],
+                coordinates: [30.3255, 59.9275],
                 name: "Морозова Елена Викторовна",
                 age: 82,
                 disability: "Опорно-двигательный аппарат",
                 description: "Помощь с доставкой тяжелых продуктов из супермаркета",
                 datetime: "13.10.2025, 16:00",
-                urgent: false
+                urgent: false,
+                city: "Санкт-Петербург"
             },
+            // Новосибирск
             {
                 id: 8,
-                coordinates: [37.6350, 55.7500],
+                coordinates: [82.9204, 55.0084],
                 name: "Громов Павел Александрович",
                 age: 70,
                 disability: "Общее заболевание",
                 description: "Нужна помощь в заполнении анкет для получения льгот",
                 datetime: "14.10.2025, 09:00",
-                urgent: false
+                urgent: false,
+                city: "Новосибирск"
             },
+            // Екатеринбург
             {
                 id: 9,
-                coordinates: [37.6200, 55.7400],
+                coordinates: [60.6122, 56.8519],
                 name: "Волкова Ирина Сергеевна",
                 age: 74,
                 disability: "Нарушение слуха",
                 description: "Сопровождение на почту для отправки посылки родственникам",
                 datetime: "15.10.2025, 14:30",
-                urgent: false
+                urgent: false,
+                city: "Екатеринбург"
             },
+            // Казань
             {
                 id: 10,
-                coordinates: [37.6400, 55.7550],
+                coordinates: [49.1085, 55.7963],
                 name: "Тихонов Михаил Петрович",
                 age: 79,
                 disability: "Опорно-двигательный аппарат",
                 description: "Помощь в прогулке на свежем воздухе в парке",
                 datetime: "16.10.2025, 11:00",
-                urgent: false
+                urgent: false,
+                city: "Казань"
+            },
+
+            {
+                id: 11,
+                coordinates: [37.6057, 55.7479],
+                name: "Крючкова Любовь Васильевна",
+                age: 56,
+                disability: "Общее заболевание",
+                description: "Помогите донести пакеты. До метро Октябрьская!!!",
+                datetime: "07.10.2025, 7:00",
+                urgent: false,
+                city: "Москва"
+            },
+            {
+                id: 12,
+                coordinates: [37.6080, 55.6900],
+                name: "Фезякина Ольга Андреевна",
+                age: 45,
+                disability: "Общее заболевание",
+                description: "Нужна помощь с лекарствами.",
+                datetime: "15.10.2025, 23:00",
+                urgent: false,
+                city: "Москва"
+            },
+            {
+                id: 13,
+                coordinates: [37.6085, 55.6940],
+                name: "Андреев Сергей Викторович",
+                age: 95,
+                disability: "Общее заболевание",
+                description: "довести. ребята. срочно",
+                datetime: "15.10.2025, 23:00",
+                urgent: true,
+                city: "Москва"
             }
         ];
+
+        filteredHelpRequests = [...allHelpRequests];
 
         function initMap() {
             map = new mapgl.Map('map', {
@@ -635,57 +870,12 @@
             }, 1000);
         }
 
-        function saveAddress() {
-            const addressInput = document.getElementById('userAddress');
-            const address = addressInput.value.trim();
-            
-            if (!address) {
-                alert('Пожалуйста, введите адрес');
-                return;
-            }
-
-            updateStatus('Сохранение адреса...');
-
-            geocodeAddress(address).then(coords => {
-                savedAddress = address;
-                savedAddressCoords = [coords.lon, coords.lat];
-                
-                // Сохраняем в localStorage
-                localStorage.setItem('savedAddress', address);
-                
-                // Показываем сохранённый адрес
-                document.getElementById('savedAddressText').textContent = address;
-                document.getElementById('savedAddress').style.display = 'block';
-                
-                updateStatus('Адрес сохранён!');
-                
-                // Показываем маркер сохранённого адреса
-                showSavedAddressMarker();
-                
-            }).catch(error => {
-                updateStatus('Ошибка определения адреса');
-                alert('Не удалось определить координаты введенного адреса. Проверьте правильность адреса.');
-            });
-        }
-
-        function showSavedAddressMarker() {
-            if (savedAddressCoords) {
-                // Удаляем предыдущий маркер сохранённого адреса, если есть
-                if (window.savedAddressMarker) {
-                    window.savedAddressMarker.destroy();
-                }
-                
-                window.savedAddressMarker = new mapgl.Marker(map, {
-                    coordinates: savedAddressCoords,
-                    icon: 'https://docs.2gis.com/img/mapgl/marker.svg',
-                    color: '#ffc107',
-                    size: [40, 40]
-                });
-            }
-        }
-
         function addHelpMarkers() {
-            helpRequests.forEach(request => {
+            // Чистка прошлых маркеров
+            helpMarkers.forEach(marker => marker.destroy());
+            helpMarkers = [];
+
+            filteredHelpRequests.forEach(request => {
                 const markerColor = request.urgent ? '#dc3545' : '#007bff';
                 
                 const marker = new mapgl.Marker(map, {
@@ -702,9 +892,130 @@
                 helpMarkers.push(marker);
             });
             
-            updateStatus(`Доступно: ${helpMarkers.length} маркеров помощи. Нажмите на любой маркер`);
+            updateFilterResults();
+            updateStatus(`Показано: ${helpMarkers.length} из ${allHelpRequests.length} заявок`);
         }
 
+        function updateFilterResults() {
+            const resultsElement = document.getElementById('filterResults');
+            resultsElement.textContent = `Показано: ${filteredHelpRequests.length} из ${allHelpRequests.length} заявок`;
+        }
+
+        function applyFilters() {
+            const cityFilter = document.getElementById('cityFilter').value;
+            const radiusFilter = parseInt(document.getElementById('radiusFilter').value);
+            const disabilityFilter = document.getElementById('disabilityFilter').value;
+            const urgencyFilter = document.getElementById('urgencyFilter').value;
+
+            filteredHelpRequests = allHelpRequests.filter(request => {
+                // Фильтр по городу
+                if (cityFilter !== 'all' && request.city !== cityFilter) {
+                    return false;
+                }
+
+                // Тип инвалидности
+                if (disabilityFilter !== 'all' && request.disability !== disabilityFilter) {
+                    return false;
+                }
+
+                // Срочность
+                if (urgencyFilter === 'urgent' && !request.urgent) {
+                    return false;
+                }
+                if (urgencyFilter === 'normal' && request.urgent) {
+                    return false;
+                }
+
+                // фильтр по радиусу (если есть сохранённый (введённый) адрес) Не работает от местоположения !!
+                if (radiusFilter > 0 && savedAddressCoords) {
+                    const distance = calculateSimpleDistance(savedAddressCoords, request.coordinates);
+                    if (distance > radiusFilter) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+            addHelpMarkers();
+            updateStatus(`Применены фильтры. Показано: ${filteredHelpRequests.length} заявок`);
+        }
+
+        function resetFilters() {
+            document.getElementById('cityFilter').value = 'all';
+            document.getElementById('radiusFilter').value = '0';
+            document.getElementById('disabilityFilter').value = 'all';
+            document.getElementById('urgencyFilter').value = 'all';
+            
+            filteredHelpRequests = [...allHelpRequests];
+            addHelpMarkers();
+            updateStatus('Фильтры сброшены');
+        }
+
+        function toggleFilters() {
+            const filtersPanel = document.getElementById('filtersPanel');
+            const filtersToggle = document.getElementById('filtersToggle');
+            
+            if (filtersPanel.style.display === 'none') {
+                filtersPanel.style.display = 'block';
+                filtersToggle.style.display = 'none';
+            } else {
+                filtersPanel.style.display = 'none';
+                filtersToggle.style.display = 'block';
+            }
+        }
+
+        function saveAddress() {
+            const addressInput = document.getElementById('userAddress');
+            const address = addressInput.value.trim();
+            
+            if (!address) {
+                alert('Пожалуйста, введите адрес');
+                return;
+            }
+
+            updateStatus('Сохранение адреса...');
+
+            geocodeAddress(address).then(coords => {
+                savedAddress = address;
+                savedAddressCoords = [coords.lon, coords.lat];
+                
+                // Сохраняем в localStorage наш сохранённый адрес
+                localStorage.setItem('savedAddress', address);
+                
+                // показываем сохранённый адрес
+                document.getElementById('savedAddressText').textContent = address;
+                document.getElementById('savedAddress').style.display = 'block';
+                
+                updateStatus('Адрес сохранён!');
+                
+                // Показываем маркер нашего адреса
+                showSavedAddressMarker();
+                
+            }).catch(error => {
+                updateStatus('Ошибка определения адреса');
+                alert('Не удалось определить координаты введенного адреса. Проверьте правильность адреса.');
+            });
+        }
+
+        function showSavedAddressMarker() {
+            if (savedAddressCoords) {
+                if (window.savedAddressMarker) {
+                    window.savedAddressMarker.destroy();
+                }
+                
+                window.savedAddressMarker = new mapgl.Marker(map, {
+                    coordinates: savedAddressCoords,
+                    icon: 'https://docs.2gis.com/img/mapgl/marker.svg',
+                    color: '#ffc107',
+                    size: [40, 40]
+                });
+            }
+        }
+
+
+        // Возможно остался мусор от методов построения маршрута....
+        
         function showMarkerPopup(data) {
             currentMarkerData = data;
             
@@ -751,153 +1062,9 @@
             }
         }
 
-        function buildRouteFromAddress() {
-            closeRouteChoicePopup();
-            
-            if (!currentMarkerData) return;
-            
-            if (!savedAddressCoords) {
-                alert('Сначала сохраните адрес, нажав кнопку "Применить"');
-                return;
-            }
+        
 
-            clearRoute();
-            buildRoute(savedAddressCoords, currentMarkerData.coordinates, 'address');
-        }
-
-        async function buildRoute(startCoords, endCoords, routeType) {
-            updateStatus('Построение маршрута...');
-
-            try {
-                // Очищаем предыдущие маркеры и маршрут
-                if (startMarker) startMarker.destroy();
-                if (endMarker) endMarker.destroy();
-
-                // Создаем маркеры начала и конца
-                const startColor = routeType === 'location' ? '#28a745' : '#ffc107';
-                startMarker = new mapgl.Marker(map, {
-                    coordinates: startCoords,
-                    icon: 'https://docs.2gis.com/img/mapgl/marker.svg',
-                    color: startColor,
-                    size: [45, 45]
-                });
-
-                endMarker = new mapgl.Marker(map, {
-                    coordinates: endCoords,
-                    icon: 'https://docs.2gis.com/img/mapgl/marker.svg',
-                    color: '#dc3545',
-                    size: [45, 45]
-                });
-
-                // Используем Directions API для построения маршрута
-                const response = await fetch(`https://routing.api.2gis.com/getRoute?key=f9fec7ee-27e4-4dd2-bccd-61b3ee664093&points=${startCoords[1]},${startCoords[0]};${endCoords[1]},${endCoords[0]}&type=pedestrian`);
-
-                if (!response.ok) {
-                    throw new Error('Ошибка построения маршрута');
-                }
-
-                const data = await response.json();
-                
-                if (data.result && data.result.path) {
-                    displayRoute(data.result.path, routeType);
-                } else {
-                    // Если API не сработало, строим прямую линию
-                    displaySimpleRoute(startCoords, endCoords, routeType);
-                }
-
-            } catch (error) {
-                console.error('Ошибка построения маршрута:', error);
-                // Строим простой маршрут как запасной вариант
-                displaySimpleRoute(startCoords, endCoords, routeType);
-            }
-        }
-
-        function displayRoute(routePath, routeType) {
-            if (routeLine) {
-                routeLine.destroy();
-            }
-
-            // Преобразуем координаты маршрута в нужный формат
-            const coordinates = routePath.map(point => [point[1], point[0]]);
-
-            const routeColor = routeType === 'location' ? '#28a745' : '#ffc107';
-            
-            routeLine = new mapgl.Polyline(map, {
-                coordinates: coordinates,
-                width: 6,
-                color: routeColor,
-                opacity: 0.8
-            });
-
-            // Рассчитываем расстояние маршрута
-            const distance = calculateRouteDistance(coordinates);
-            const routeInfo = document.getElementById('routeInfo');
-            const routeDetails = document.getElementById('routeDetails');
-            
-            const routeTypeText = routeType === 'location' ? 'от вашего местоположения' : 'от сохранённого адреса';
-            
-            routeDetails.innerHTML = `
-                Маршрут ${routeTypeText}<br>
-                Расстояние: ${distance} км<br>
-                Примерное время: ${Math.round(distance * 15)} мин
-            `;
-            routeInfo.style.display = 'block';
-
-            updateStatus('Маршрут построен успешно!');
-        }
-
-        function displaySimpleRoute(startCoords, endCoords, routeType) {
-            if (routeLine) {
-                routeLine.destroy();
-            }
-
-            const routeColor = routeType === 'location' ? '#28a745' : '#ffc107';
-            
-            // Создаем простую прямую линию между точками
-            routeLine = new mapgl.Polyline(map, {
-                coordinates: [startCoords, endCoords],
-                width: 6,
-                color: routeColor,
-                opacity: 0.8
-            });
-
-            const distance = calculateSimpleDistance(startCoords, endCoords);
-            const routeInfo = document.getElementById('routeInfo');
-            const routeDetails = document.getElementById('routeDetails');
-            
-            const routeTypeText = routeType === 'location' ? 'от вашего местоположения' : 'от сохранённого адреса';
-            
-            routeDetails.innerHTML = `
-                Маршрут ${routeTypeText}<br>
-                Расстояние: ${distance} км<br>
-                Примерное время: ${Math.round(distance * 15)} мин<br>
-                <small>(прямой маршрут)</small>
-            `;
-            routeInfo.style.display = 'block';
-
-            updateStatus('Маршрут построен (прямая линия)');
-        }
-
-        function getUserLocationForRoute(destinationCoords) {
-            if (!navigator.geolocation) {
-                alert('Геолокация не поддерживается вашим браузером');
-                return;
-            }
-
-            updateStatus('Определение местоположения для маршрута...');
-
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const userCoords = [position.coords.longitude, position.coords.latitude];
-                    showUserLocation(userCoords, position.coords.accuracy);
-                    buildRoute(userCoords, destinationCoords, 'location');
-                },
-                (error) => {
-                    handleLocationError(error);
-                    alert('Не удалось определить ваше местоположение для построения маршрута');
-                }
-            );
-        }
+        
 
         async function geocodeAddress(address) {
             try {
@@ -972,31 +1139,7 @@
             );
         }
 
-        function startTracking() {
-            if (!navigator.geolocation) {
-                alert('Геолокация не поддерживается вашим браузером');
-                return;
-            }
-
-            if (watchId) {
-                alert('Отслеживание уже активно');
-                return;
-            }
-
-            updateStatus('Начато отслеживание местоположения...');
-
-            watchId = navigator.geolocation.watchPosition(
-                (position) => {
-                    const coords = [position.coords.longitude, position.coords.latitude];
-                    showUserLocation(coords, position.coords.accuracy);
-                    updateStatus('Отслеживание активно');
-                },
-                (error) => {
-                    handleLocationError(error);
-                    stopTracking();
-                }
-            );
-        }
+        
 
         function showUserLocation(coords, accuracy) {
             if (!map) return;
@@ -1057,34 +1200,9 @@
             }
         }
 
-        function stopTracking() {
-            if (watchId) {
-                navigator.geolocation.clearWatch(watchId);
-                watchId = null;
-                updateStatus('Отслеживание остановлено');
-            }
-        }
-
-        function clearRoute() {
-            if (routeLine) {
-                routeLine.destroy();
-                routeLine = null;
-            }
-            if (startMarker) {
-                startMarker.destroy();
-                startMarker = null;
-            }
-            if (endMarker) {
-                endMarker.destroy();
-                endMarker = null;
-            }
-            
-            document.getElementById('routeInfo').style.display = 'none';
-            updateStatus('Маршрут очищен');
-        }
 
         function toggleTaskList() {
-            alert('Функция списка задач будет реализована в будущем');
+            alert('Функция списка задач - чтобы не искать по карте. Будет реализована в будущем..');
         }
 
         window.addEventListener('load', initMap);

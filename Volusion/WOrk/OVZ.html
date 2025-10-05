@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2Inclusion - Помощь для людей с ОВЗ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: Arial, sans-serif;
+        }
+        
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .control-panel {
+            position: absolute;
+            top: 20px;
+            right: 50px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            background: white;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: #007bff;
+            color: white;
+        }
+        
+        .location-btn {
+            border-color: #28a745;
+            background: #28a745;
+            color: white;
+        }
+        
+        .location-btn:hover {
+            background: #218838;
+            border-color: #218838;
+        }
+        
+        .status {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.9);
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .coordinates {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.9);
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .add-task-btn {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            border: 2px solid #28a745;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .add-task-btn:hover {
+            background: #28a745;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .address-input {
+            position: absolute;
+            bottom: 20px;
+            right: 50px;
+            background: rgba(255,255,255,0.95);
+            padding: 15px;
+            border-radius: 8px;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            min-width: 300px;
+        }
+
+        .address-input label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .address-input input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* Модальное окно добавления задачи */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .close {
+            float: right;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .close:hover {
+            color: #000;
+        }
+        
+        .modal-title {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #333;
+            font-size: 22px;
+            font-weight: bold;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: bold;
+        }
+        
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        
+        .form-textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        
+        .points-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .point-input {
+            flex: 1;
+        }
+        
+        .btn-primary {
+            width: 100%;
+            padding: 15px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+        
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .success-message {
+            color: #28a745;
+            font-size: 16px;
+            margin-top: 15px;
+            text-align: center;
+            display: none;
+        }
+
+        .responses-count {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.9);
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    
+    <div class="control-panel">
+        <button class="btn location-btn" onclick="getUserLocation()">
+            🎯 Моё местоположение
+        </button>
+        <button class="btn" onclick="startTracking()" style="border-color: #ffc107;">
+            🔄 Определить местоположение
+        </button>
+        <button class="btn" onclick="stopTracking()" style="border-color: #dc3545;">
+            ⏹️ Прекратить отслеживать
+        </button>
+        <button class="btn" onclick="showMoscow()">
+            🏢 Москва
+        </button>
+    </div>
+
+    <div class="address-input">
+        <label for="userAddress">Введите свой адрес:</label>
+        <input type="text" id="userAddress" placeholder="Например: Москва, ул. Тверская, 1">
+    </div>
+
+    <button class="add-task-btn" onclick="showAddTaskModal()">
+        +
+    </button>
+    
+    <div class="coordinates" id="coordinates">
+        Координаты: не определены
+    </div>
+    
+    <div class="status" id="status">
+        Карта загружается...
+    </div>
+
+    <div class="responses-count" id="responsesCount">
+        Откликов: 0
+    </div>
+
+    <!-- Модальное окно добавления задачи -->
+    <div id="addTaskModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAddTaskModal()">&times;</span>
+            <div class="modal-title">Добавьте вашу задачу</div>
+            
+            <form id="taskForm">
+                <div class="form-group">
+                    <label class="form-label">1) Укажите ваш возраст</label>
+                    <input type="number" class="form-input" id="userAge" min="1" max="120" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">2) Укажите тип инвалидности</label>
+                    <select class="form-select" id="disabilityType" required>
+                        <option value="">Выберите тип инвалидности</option>
+                        <option value="Опорно-двигательный аппарат">Опорно-двигательный аппарат</option>
+                        <option value="Нарушение зрения">Нарушение зрения</option>
+                        <option value="Нарушение слуха">Нарушение слуха</option>
+                        <option value="Ментальные нарушения">Ментальные нарушения</option>
+                        <option value="Общее заболевание">Общее заболевание</option>
+                        <option value="Другое">Другое</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">3) Опишите, чем вам нужно помочь</label>
+                    <textarea class="form-textarea" id="helpDescription" placeholder="Подробно опишите, какая помощь вам требуется..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">4) Когда вам нужно помочь (дата и время)</label>
+                    <input type="datetime-local" class="form-input" id="helpDateTime" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">5) Маршрут помощи</label>
+                    <div class="points-group">
+                        <div class="point-input">
+                            <label class="form-label">Точка А (откуда)</label>
+                            <input type="text" class="form-input" id="pointA" placeholder="Начальная точка" required>
+                        </div>
+                        <div class="point-input">
+                            <label class="form-label">Точка Б (куда)</label>
+                            <input type="text" class="form-input" id="pointB" placeholder="Конечная точка" required>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary" id="submitTaskBtn">Далее</button>
+            </form>
+
+            <div class="success-message" id="successMessage">
+                Задача успешно добавлена! Откликов: 0
+            </div>
+        </div>
+    </div>
+
+    <script src="https://mapgl.2gis.com/api/js/v1"></script>
+    <script>
+        let map;
+        let userMarker;
+        let watchId = null;
+        let routeLine = null;
+        let startMarker = null;
+        let endMarker = null;
+
+        // Убраны маркеры помощи, так как теперь пользователь сам создает задачи
+
+        function initMap() {
+            map = new mapgl.Map('map', {
+                center: [37.6175, 55.7558],
+                zoom: 13,
+                key: '783e0858-39de-4c83-a72c-bc2858c795be',
+            });
+
+            updateStatus('Карта загружена. Нажмите "+" чтобы добавить задачу');
+        }
+
+        // Функции для модального окна
+        function showAddTaskModal() {
+            document.getElementById('addTaskModal').style.display = 'flex';
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('taskForm').reset();
+        }
+
+        function closeAddTaskModal() {
+            document.getElementById('addTaskModal').style.display = 'none';
+        }
+
+        // Обработка формы добавления задачи
+        document.getElementById('taskForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const taskData = {
+                age: document.getElementById('userAge').value,
+                disabilityType: document.getElementById('disabilityType').value,
+                helpDescription: document.getElementById('helpDescription').value,
+                helpDateTime: document.getElementById('helpDateTime').value,
+                pointA: document.getElementById('pointA').value,
+                pointB: document.getElementById('pointB').value,
+                timestamp: new Date().toISOString(),
+                responses: 0
+            };
+            
+            // Сохраняем задачу в localStorage
+            saveTask(taskData);
+            
+            // Показываем сообщение об успехе
+            document.getElementById('successMessage').style.display = 'block';
+            document.getElementById('taskForm').reset();
+            
+            // Обновляем счетчик откликов
+            updateResponsesCount();
+            
+            console.log('Задача добавлена:', taskData);
+            
+            // Закрываем модальное окно через 2 секунды
+            setTimeout(() => {
+                closeAddTaskModal();
+            }, 2000);
+        });
+
+        function saveTask(taskData) {
+            let tasks = JSON.parse(localStorage.getItem('userTasks') || '[]');
+            tasks.push(taskData);
+            localStorage.setItem('userTasks', JSON.stringify(tasks));
+        }
+
+        function updateResponsesCount() {
+            document.getElementById('responsesCount').textContent = 'Откликов: 0';
+        }
+
+        // Существующие функции карты (оставлены без изменений)
+        function showMoscow() {
+            if (map) {
+                map.setCenter([37.6175, 55.7558]);
+                map.setZoom(13);
+                updateStatus('Москва');
+            }
+        }
+
+        function getUserLocation() {
+            if (!navigator.geolocation) {
+                alert('Геолокация не поддерживается вашим браузером');
+                return;
+            }
+
+            updateStatus('Определение местоположения...');
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const coords = [position.coords.longitude, position.coords.latitude];
+                    showUserLocation(coords, position.coords.accuracy);
+                    updateStatus('Местоположение определено!');
+                },
+                (error) => {
+                    handleLocationError(error);
+                }
+            );
+        }
+
+        function startTracking() {
+            if (!navigator.geolocation) {
+                alert('Геолокация не поддерживается вашим браузером');
+                return;
+            }
+
+            if (watchId) {
+                alert('Отслеживание уже активно');
+                return;
+            }
+
+            updateStatus('Начато отслеживание местоположения...');
+            watchId = navigator.geolocation.watchPosition(
+                (position) => {
+                    const coords = [position.coords.longitude, position.coords.latitude];
+                    showUserLocation(coords, position.coords.accuracy);
+                    updateStatus('Отслеживание активно');
+                },
+                (error) => {
+                    handleLocationError(error);
+                    stopTracking();
+                }
+            );
+        }
+
+        function showUserLocation(coords, accuracy) {
+            if (!map) return;
+
+            if (userMarker) {
+                userMarker.destroy();
+            }
+
+            userMarker = new mapgl.Marker(map, {
+                coordinates: coords,
+                icon: 'https://docs.2gis.com/img/mapgl/marker.svg',
+                color: '#28a745',
+                size: [35, 35]
+            });
+
+            map.setCenter(coords);
+            map.setZoom(16);
+            updateCoordinates(coords, accuracy);
+        }
+
+        function updateCoordinates(coords, accuracy) {
+            const coordsElement = document.getElementById('coordinates');
+            if (coordsElement) {
+                coordsElement.innerHTML = `
+                    Широта: ${coords[1].toFixed(6)}<br>
+                    Долгота: ${coords[0].toFixed(6)}<br>
+                    Точность: ${accuracy ? accuracy.toFixed(0) + ' м' : 'неизвестно'}
+                `;
+            }
+        }
+
+        function handleLocationError(error) {
+            let message = '';
+            
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    message = 'Доступ к геолокации запрещен';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    message = 'Информация о местоположении недоступна';
+                    break;
+                case error.TIMEOUT:
+                    message = 'Время запроса истекло';
+                    break;
+                default:
+                    message = 'Произошла неизвестная ошибка';
+                    break;
+            }
+            
+            updateStatus('Ошибка: ' + message);
+        }
+
+        function updateStatus(text) {
+            const statusElement = document.getElementById('status');
+            if (statusElement) {
+                statusElement.textContent = text;
+            }
+        }
+
+        function stopTracking() {
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+                updateStatus('Отслеживание остановлено');
+            }
+        }
+
+        function clearRoute() {
+            if (routeLine) {
+                routeLine.destroy();
+                routeLine = null;
+            }
+            if (startMarker) {
+                startMarker.destroy();
+                startMarker = null;
+            }
+            if (endMarker) {
+                endMarker.destroy();
+                endMarker = null;
+            }
+            
+            updateStatus('Маршрут очищен');
+        }
+
+        // Закрытие модального окна при клике вне его
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('addTaskModal');
+            if (event.target === modal) {
+                closeAddTaskModal();
+            }
+        });
+
+        window.addEventListener('load', initMap);
+        window.addEventListener('beforeunload', () => {
+            stopTracking();
+        });
+    </script>
+</body>
+</html>
